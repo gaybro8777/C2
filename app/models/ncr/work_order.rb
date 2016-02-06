@@ -49,7 +49,7 @@ module Ncr
       message: "must be three letters or numbers"
     }, allow_blank: true
 
-    def self.all_system_approver_emails
+    def self.all_system_approvers
       [
         Ncr::Mailboxes.ba61_tier1_budget,
         Ncr::Mailboxes.ba61_tier2_budget,
@@ -93,7 +93,7 @@ module Ncr
     end
 
     def approving_official
-      approvers.first
+      proposal.approval_steps.first.try(:assignee)
     end
 
     def current_approver
@@ -104,7 +104,7 @@ module Ncr
       elsif emergency and approvers.empty?
         nil
       else
-        User.for_email(system_approver_emails.first)
+        system_approvers.first
       end
     end
 

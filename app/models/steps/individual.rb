@@ -2,15 +2,14 @@
 # chain
 module Steps
   class Individual < Step
-    belongs_to :user
     has_one :api_token, -> { fresh }, foreign_key: "step_id"
-    has_many :delegations, through: :user, source: :outgoing_delegations
+    has_many :delegations, through: :assignee, source: :outgoing_delegations
     has_many :delegates, through: :delegations, source: :assignee
 
     validate :user_is_not_requester
-    validates :user, presence: true
-    delegate :full_name, :email_address, to: :user, prefix: true
-    scope :with_users, -> { includes :user }
+    validates :assignee, presence: true
+    delegate :full_name, :email_address, to: :assignee, prefix: true
+    scope :with_users, -> { includes :assignee }
 
     self.abstract_class = true
 
@@ -54,7 +53,7 @@ module Steps
     end
 
     def user_is_not_requester
-      if user && user == proposal.requester
+      if assignee && assignee == proposal.requester
         errors.add(:user, "Cannot be Requester")
       end
     end

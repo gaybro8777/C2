@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160202210256) do
+ActiveRecord::Schema.define(version: 20160205225617) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -165,7 +165,7 @@ ActiveRecord::Schema.define(version: 20160202210256) do
   add_index "roles", ["name"], name: "roles_name_idx", unique: true, using: :btree
 
   create_table "steps", force: :cascade do |t|
-    t.integer  "user_id"
+    t.integer  "assignee_id"
     t.string   "status",              limit: 255
     t.datetime "created_at"
     t.datetime "updated_at"
@@ -176,10 +176,11 @@ ActiveRecord::Schema.define(version: 20160202210256) do
     t.integer  "parent_id"
     t.integer  "min_children_needed"
     t.integer  "completer_id"
+    t.string   "assignee_type"
   end
 
+  add_index "steps", ["assignee_id", "proposal_id"], name: "steps_user_proposal_idx", unique: true, using: :btree
   add_index "steps", ["completer_id"], name: "index_steps_on_completer_id", using: :btree
-  add_index "steps", ["user_id", "proposal_id"], name: "steps_user_proposal_idx", unique: true, using: :btree
 
   create_table "taggings", force: :cascade do |t|
     t.integer  "tag_id"
@@ -246,8 +247,8 @@ ActiveRecord::Schema.define(version: 20160202210256) do
   add_foreign_key "proposals", "users", column: "requester_id", name: "requester_id_fkey"
   add_foreign_key "steps", "proposals", name: "proposal_id_fkey", on_delete: :cascade
   add_foreign_key "steps", "steps", column: "parent_id", name: "parent_id_fkey", on_delete: :cascade
+  add_foreign_key "steps", "users", column: "assignee_id", name: "user_id_fkey"
   add_foreign_key "steps", "users", column: "completer_id", name: "completer_id_fkey"
-  add_foreign_key "steps", "users", name: "user_id_fkey"
   add_foreign_key "user_delegates", "users", column: "assignee_id", name: "assignee_id_fkey"
   add_foreign_key "user_delegates", "users", column: "assigner_id", name: "assigner_id_fkey"
   add_foreign_key "user_roles", "roles", name: "role_id_fkey"

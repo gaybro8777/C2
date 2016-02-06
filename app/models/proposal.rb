@@ -35,9 +35,9 @@ class Proposal < ActiveRecord::Base
   has_many :individual_steps, ->{ individual }, class_name: "Steps::Individual"
   has_many :approval_steps, class_name: "Steps::Approval"
   has_many :purchase_steps, class_name: "Steps::Purchase"
-  has_many :step_users, through: :individual_steps, source: :user
-  has_many :approvers, through: :approval_steps, source: :user
-  has_many :purchasers, through: :purchase_steps, source: :user
+  has_many :step_users, through: :individual_steps, source: :assignee
+  has_many :approvers, through: :approval_steps, source: :assignee
+  has_many :purchasers, through: :purchase_steps, source: :assignee
   has_many :completers, through: :individual_steps, source: :completer
   has_many :api_tokens, through: :individual_steps
   has_many :attachments, dependent: :destroy
@@ -134,17 +134,11 @@ class Proposal < ActiveRecord::Base
   end
 
   def delegate?(user)
-    user_delegates.exists?(assignee_id: user.id)
+    user_delegates.exists?(user: user)
   end
 
   def existing_step_for(user)
-    where_clause = <<-SQL
-      user_id = :user_id
-      OR user_id IN (SELECT assigner_id FROM user_delegates WHERE assignee_id = :user_id)
-      OR user_id IN (SELECT assignee_id FROM user_delegates WHERE assigner_id = :user_id)
-    SQL
-
-    steps.where(where_clause, user_id: user.id).first
+    steps.where(assignee: user).first
   end
 
   def subscribers
@@ -182,9 +176,7 @@ class Proposal < ActiveRecord::Base
     end
   end
 
-  def add_observer(email_address, adder=nil, reason=nil)
-    user = User.for_email_with_slug(email_address, client_slug)
-
+  def add_observer(user, adder=nil, reason=nil)
     # this authz check is here instead of in a Policy because the Policy classes
     # are applied to the current_user, not (as in this case) the user being acted upon.
     if client_data && !client_data.slug_matches?(user) && !user.admin?

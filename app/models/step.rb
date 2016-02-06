@@ -8,7 +8,7 @@ class Step < ActiveRecord::Base
     state :approved
   end
 
-  belongs_to :user
+  belongs_to :assignee, polymorphic: true
   belongs_to :proposal, touch: true
   belongs_to :completer, class_name: "User"
   acts_as_list scope: :proposal
@@ -17,7 +17,7 @@ class Step < ActiveRecord::Base
   has_many :child_approvals, class_name: "Step", foreign_key: "parent_id", dependent: :destroy
 
   validates :proposal, presence: true
-  validates :user_id, uniqueness: { scope: :proposal_id }, allow_blank: true
+  # validates :assignee_id, uniqueness: { scope: :proposal_id }, allow_blank: true
 
   scope :individual, -> { where(type: ["Steps::Approval", "Steps::Purchase"]).order("position ASC") }
 
@@ -34,7 +34,7 @@ class Step < ActiveRecord::Base
   end
 
   def completed_by
-    completer || user
+    completer || assignee
   end
 
   protected
