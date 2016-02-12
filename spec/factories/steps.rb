@@ -1,12 +1,10 @@
 FactoryGirl.define do
   factory :step do
     proposal
-    user
-  end
+    association :assignee, factory: :user
 
-  factory :approval_step, class: Steps::Approval do
-    proposal
-    user
+    factory :approval_step, class: Steps::Approval do
+    end
 
     factory :serial_step, class: Steps::Serial do
     end

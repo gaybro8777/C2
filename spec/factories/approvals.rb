@@ -1,7 +1,7 @@
 FactoryGirl.define do
   factory :approval, class: Steps::Approval do
     proposal
-    user
+    association :assignee, factory: :user
     status 'pending'
   end
 end

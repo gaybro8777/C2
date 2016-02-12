@@ -2,24 +2,24 @@ describe Steps::Individual do
   describe "#delegates" do
     it "returns a list of users" do
       approval = create(:approval)
-      approver = approval.user
-      delegate = create(:user)
-      approver.add_delegate(delegate)
+      approver = approval.assignee
+      delegate_user = create(:user)
+      approver.add_delegate(delegate_user)
 
-      expect(approval.delegates).to eq([delegate])
+      expect(approval.delegates).to eq([delegate_user])
     end
   end
 
   describe "#completed_by" do
     it "identifies completed_by" do
       approval = create(:approval)
-      delegate = create(:user)
-      approval.completer = delegate
+      delegate_user = create(:user)
+      approval.completer = delegate_user
       approval.save!
       approval_self = create(:approval)
 
-      expect(approval.completed_by).to eq delegate
-      expect(approval_self.completed_by).to eq approval_self.user
+      expect(approval.completed_by).to eq delegate_user
+      expect(approval_self.completed_by).to eq approval_self.assignee
     end
   end
 

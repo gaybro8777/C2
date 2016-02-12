@@ -1,14 +1,14 @@
 describe Step do
   describe "Associations" do
-    it { should belong_to(:user) }
+    it { should belong_to(:assignee) }
     it { should belong_to(:proposal) }
   end
 
   describe "Validations" do
     it { should validate_presence_of(:proposal) }
     it do
-      create(:approval) # needed for spec, see https://github.com/thoughtbot/shoulda-matchers/issues/194
-      should validate_uniqueness_of(:user_id).scoped_to(:proposal_id)
+      create(:step) # needed for spec, see https://github.com/thoughtbot/shoulda-matchers/issues/194
+      should validate_uniqueness_of(:proposal_id).scoped_to([:assignee_type, :assignee_id])
     end
   end
 
@@ -62,8 +62,8 @@ describe Step do
 
     it "does not notify the proposal if a child gets approved" do
       proposal = create(:proposal)
-      child1 = build(:approval, user: create(:user))
-      child2 = build(:approval, user: create(:user))
+      child1 = build(:approval, assignee: create(:user))
+      child2 = build(:approval, assignee: create(:user))
       proposal.root_step = build(:parallel_step, child_approvals: [child1, child2])
 
       expect(proposal).not_to receive(:approve!)
@@ -101,16 +101,16 @@ describe Step do
     before :each do
       # @todo syntax for this will get cleaned up
       and_clause = create(:parallel_step, child_approvals: [
-        create(:approval, user: amy),
-        create(:approval, user: bob)
+        create(:approval, assignee: amy),
+        create(:approval, assignee: bob)
       ])
       then_clause = create(:serial_step, child_approvals: [
-        create(:approval, user: dan),
-        create(:approval, user: erin)
+        create(:approval, assignee: dan),
+        create(:approval, assignee: erin)
       ])
       proposal.root_step = create(:parallel_step, min_children_needed: 2, child_approvals: [
         and_clause,
-        create(:approval, user: carrie),
+        create(:approval, assignee: carrie),
         then_clause
       ])
     end
@@ -160,15 +160,15 @@ describe Step do
       and_clause = build(
         :parallel_step,
         child_approvals: [
-          build(:approval, user: amy),
-          build(:approval, user: bob)
+          build(:approval, assignee: amy),
+          build(:approval, assignee: bob)
         ]
       )
       then_clause = build(
         :parallel_step,
         child_approvals: [
-          build(:approval, user: dan),
-          build(:approval, user: erin)
+          build(:approval, assignee: dan),
+          build(:approval, assignee: erin)
         ]
       )
       proposal.root_step = build(
@@ -176,7 +176,7 @@ describe Step do
         min_children_needed: 2,
         child_approvals: [
           and_clause,
-          build(:approval, user: carrie),
+          build(:approval, assignee: carrie),
           then_clause
         ]
       )
