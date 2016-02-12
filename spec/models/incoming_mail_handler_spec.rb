@@ -20,9 +20,8 @@ describe "Handles incoming email" do
 
   it "should forward email if From and Sender do not match a valid User" do
     expect(deliveries.length).to eq(0)
-    my_approval = approval
     handler = IncomingMail::Handler.new
-    mail = Mailer.actions_for_approver(my_approval)
+    mail = Mailer.actions_for_approver(approval)
     mandrill_event = mandrill_payload_from_message(mail)
     mandrill_event[0]['msg']['from_email'] = 'not-a-real-user@example.com'
     mandrill_event[0]['msg']['headers']['Sender'] = 'still-not-a-real-user@example.com'
@@ -41,50 +40,47 @@ describe "Handles incoming email" do
   end
 
   it "falls back to Sender if From is not valid" do
-    my_approval = approval
-    mail = Mailer.actions_for_approver(my_approval)
+    mail = Mailer.actions_for_approver(approval)
     mandrill_event = mandrill_payload_from_message(mail)
     mandrill_event[0]['msg']['from_email'] = 'not-a-valid-user@example.com'
-    mandrill_event[0]['msg']['headers']['Sender'] = my_approval.user.email_address
+    mandrill_event[0]['msg']['headers']['Sender'] = approval.assignee.email_address
     handler = IncomingMail::Handler.new
-    expect(my_approval.proposal.existing_observation_for(my_approval.user)).not_to be_present
-    expect(my_approval.proposal.existing_step_for(my_approval.user)).to be_present
+    expect(approval.proposal.existing_observation_for(approval.assignee)).not_to be_present
+    expect(approval.proposal.existing_step_for(approval.assignee)).to be_present
     resp = handler.handle(mandrill_event)
     expect(resp.action).to eq(IncomingMail::Response::COMMENT)
   end
 
   it "should create comment and observation for approver" do
-    my_approval = approval
-    mail = Mailer.actions_for_approver(my_approval)
+    mail = Mailer.actions_for_approver(approval)
     mandrill_event = mandrill_payload_from_message(mail)
-    mandrill_event[0]['msg']['from_email'] = my_approval.user.email_address
+    mandrill_event[0]['msg']['from_email'] = approval.assignee.email_address
     handler = IncomingMail::Handler.new
-    expect(my_approval.proposal.existing_observation_for(my_approval.user)).not_to be_present
-    expect(my_approval.proposal.existing_step_for(my_approval.user)).to be_present
+    expect(approval.proposal.existing_observation_for(approval.assignee)).not_to be_present
+    expect(approval.proposal.existing_step_for(approval.assignee)).to be_present
     resp = handler.handle(mandrill_event)
     expect(resp.action).to eq(IncomingMail::Response::COMMENT)
 
-    expect(my_approval.proposal.existing_observation_for(my_approval.user)).to be_present
-    expect(my_approval.proposal.existing_step_for(my_approval.user)).to be_present
+    expect(approval.proposal.existing_observation_for(approval.assignee)).to be_present
+    expect(approval.proposal.existing_step_for(approval.assignee)).to be_present
     expect(deliveries.length).to eq(1) # 1 each to requester and approver
   end
 
   it "should not create comment for non-subscriber and not add as observer" do
-    my_approval = approval
-    my_proposal = my_approval.proposal
+    proposal = approval.proposal
     user = create(:user)
     mandrill_event = mandrill_payload_from_message(mail)
     mandrill_event[0]['msg']['from_email'] = user.email_address
     handler = IncomingMail::Handler.new
 
-    expect(my_approval.proposal.existing_observation_for(user)).not_to be_present
-    expect(my_approval.proposal.existing_step_for(user)).not_to be_present
+    expect(approval.proposal.existing_observation_for(user)).not_to be_present
+    expect(approval.proposal.existing_step_for(user)).not_to be_present
 
     resp = handler.handle(mandrill_event)
 
     expect(resp.action).to eq(IncomingMail::Response::FORWARDED)
     expect(deliveries.length).to eq(1)
-    expect(my_proposal.has_subscriber?(user)).to eq(false)
+    expect(proposal.has_subscriber?(user)).to eq(false)
   end
 
   it "should parse proposal public_id from email headers" do

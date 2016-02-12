@@ -148,7 +148,7 @@ class Proposal < ActiveRecord::Base
   end
 
   def subscribers
-    results = approvers + purchasers + observers + delegates + [requester]
+    results = approvers + purchasers + observers + [requester]
     results.compact.uniq
   end
 
