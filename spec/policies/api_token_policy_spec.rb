@@ -61,6 +61,6 @@ describe ApiTokenPolicy do
   end
 
   def approver
-    @approver ||= approval.user
+    @approver ||= approval.assignee
   end
 end

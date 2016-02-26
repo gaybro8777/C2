@@ -253,14 +253,14 @@ describe ProposalsController do
 
       get :approve, id: proposal.id, cch: token.access_token
 
-      expect(controller.send(:current_user)).to eq(approval.user)
+      expect(controller.send(:current_user)).to eq(approval.assignee)
     end
 
     it "won't sign the user in via the token if delegated" do
       proposal = create(:proposal, :with_approver)
       approval = proposal.individual_steps.first
       token = create(:api_token, step: approval)
-      approval.user.add_delegate(create(:user))
+      approval.assignee.add_delegate(create(:user))
 
       get :approve, id: proposal.id, cch: token.access_token
 

@@ -2,10 +2,9 @@ module Api
   module Ncr
     class WorkOrdersController < BaseController
       def index
-        # TODO use a scope for ordering
         orders = ::Ncr::WorkOrder.
           joins(:proposal).
-          includes(proposal: [:requester, individual_steps: [:user]]).
+          includes(proposal: [:requester, individual_steps: [:assignee]]).
           includes(:observers).
           order('proposals.created_at DESC')
 

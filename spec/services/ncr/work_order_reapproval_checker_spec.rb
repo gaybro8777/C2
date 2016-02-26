@@ -67,7 +67,7 @@ describe Ncr::WorkOrderReapprovalChecker do
     it "returns false if a protected field is changed by a budget approver delegate" do
       work_order = create(:ncr_work_order)
       work_order.setup_approvals_and_observers
-      budget_approver = work_order.steps.last.user
+      budget_approver = work_order.steps.last.assignee
       delegate_user = create(:user)
       create(:user_delegate, assigner: budget_approver, assignee: delegate_user)
       fully_approve(work_order.proposal, delegate_user)

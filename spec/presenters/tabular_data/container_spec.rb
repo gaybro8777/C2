@@ -26,9 +26,9 @@ describe TabularData::Container do
     end
 
     it "aliases indirect joins" do
-      container = TabularData::Container.new(:a_name, engine: "ApiToken", joins: { step: true, user: true })
+      container = TabularData::Container.new(:a_name, engine: "ApiToken", joins: { step: true, assignee: true })
 
-      expect(container.rows.to_sql).to include('ON "user"."id" = "steps"."user_id"')
+      expect(container.rows.to_sql).to include('ON "user"."id" = "steps"."assignee"')
     end
 
     it "sets sort" do

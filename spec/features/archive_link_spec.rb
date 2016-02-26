@@ -5,7 +5,7 @@ feature "Archive link" do
       approver = create(:user)
       2.times.map do |i|
         wo = create(:ncr_work_order, requester: user)
-        approval = create(:approval_step, proposal: wo.proposal, user: approver, status: "actionable")
+        approval = create(:approval_step, proposal: wo.proposal, assignee: approver, status: "actionable")
         approval.approve!
       end
 
@@ -21,7 +21,7 @@ feature "Archive link" do
       user = create(:user)
       approver = create(:user)
       wo = create(:ncr_work_order, requester: user)
-      approval = create(:approval_step, proposal: wo.proposal, user: approver, status: "actionable")
+      approval = create(:approval_step, proposal: wo.proposal, assignee: approver, status: "actionable")
       approval.approve!
 
       login_as(user)

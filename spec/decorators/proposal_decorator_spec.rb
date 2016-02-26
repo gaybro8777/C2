@@ -22,7 +22,7 @@ describe ProposalDecorator do
       it "fetches approval text" do
         proposal = create(:proposal).decorate
         user = create(:user)
-        step = Steps::Approval.new(user: user)
+        step = Steps::Approval.new(assignee: user)
         proposal.add_initial_steps([step])
 
         expect(proposal.step_text_for_user(:execute_button, user)).to eq "Approve"
@@ -33,7 +33,7 @@ describe ProposalDecorator do
       it "fetches purchase text" do
         proposal = create(:proposal).decorate
         user = create(:user)
-        step = Steps::Purchase.new(user: user)
+        step = Steps::Purchase.new(assignee: user)
         proposal.add_initial_steps([step])
 
         expect(proposal.step_text_for_user(:execute_button, user)).to eq "Mark as Purchased"
