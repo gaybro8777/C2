@@ -8,11 +8,11 @@ module StepManager
   def root_step=(root)
     old_steps = steps.to_a
     step_list = root.pre_order_tree_traversal
-    step_list.each { |a| a.proposal = self }
+    step_list.each { |step| step.proposal = self }
     self.steps = step_list
     # position may be out of whack, so we reset it
-    step_list.each_with_index do |step, idx|
-      step.set_list_position(idx + 1) # start with 1
+    step_list.each_with_index do |step, index|
+      step.set_list_position(index + 1) # start with 1
     end
 
     clean_up_old_steps(old_steps, step_list)
@@ -33,7 +33,7 @@ module StepManager
   end
 
   def currently_awaiting_step_users
-    currently_awaiting_steps.map(&:user)
+    currently_awaiting_steps.map(&:assignee)
   end
 
   def awaiting_step_user?(user)

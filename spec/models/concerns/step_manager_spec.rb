@@ -17,26 +17,24 @@ describe StepManager do
     end
   end
 
-  describe '#root_step=' do
-    it 'sets initial approvers' do
+  describe "#root_step=" do
+    it "sets initial approvers" do
       proposal = create(:proposal)
-      approvers = 3.times.map{ create(:user) }
-      individuals = approvers.map{ |u| Steps::Approval.new(user: u) }
+      approvers = create_list(:user, 3)
+      individuals = approvers.map{ |user| build(:approval_step, assignee: user) }
 
-      proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
+      proposal.root_step = build(:parallel_step, child_approvals: individuals)
 
       expect(proposal.steps.count).to be 4
       expect(proposal.approvers).to eq approvers
     end
 
-    it 'initates parallel' do
-      approver1 = create(:user)
-      approver2 = create(:user)
-      approver3 = create(:user)
+    it "initates parallel" do
+      assignees = create_list(:user, 3)
       proposal = create(:proposal)
-      individuals = [approver1, approver2, approver3].map{ |u| Steps::Approval.new(user: u)}
+      individuals = assignees.map { |user| build(:approval_step, assignee: user) }
 
-      proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
+      proposal.root_step = build(:parallel_step, child_approvals: individuals)
 
       expect(proposal.approvers.count).to be 3
       expect(proposal.steps.count).to be 4
@@ -44,14 +42,12 @@ describe StepManager do
       expect(proposal.steps.actionable.count).to be 4
     end
 
-    it 'initates linear' do
-      approver1 = create(:user)
-      approver2 = create(:user)
-      approver3 = create(:user)
+    it "initates linear" do
+      assignees = create_list(:user, 3)
       proposal = create(:proposal)
-      individuals = [approver1, approver2, approver3].map{ |u| Steps::Approval.new(user: u)}
+      individuals = assignees.map { |user| build(:approval_step, assignee: user) }
 
-      proposal.root_step = Steps::Serial.new(child_approvals: individuals)
+      proposal.root_step = build(:serial_step, child_approvals: individuals)
 
       expect(proposal.approvers.count).to be 3
       expect(proposal.steps.count).to be 4
@@ -59,52 +55,46 @@ describe StepManager do
       expect(proposal.steps.actionable.count).to be 2
     end
 
-    it 'fixes modified parallel proposal approvals' do
-      approver1 = create(:user)
-      approver2 = create(:user)
-      approver3 = create(:user)
+    it "fixes modified parallel proposal approvals" do
+      assignees = create_list(:user, 3)
       proposal = create(:proposal)
-      individuals = [Steps::Approval.new(user: approver1)]
-      proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
+      individual = [build(:approval_step, assignee: assignees[0])]
+      proposal.root_step = build(:parallel_step, child_approvals: individual)
 
       expect(proposal.steps.actionable.count).to be 2
       expect(proposal.individual_steps.actionable.count).to be 1
 
-      individuals = individuals + [approver2, approver3].map{ |u| Steps::Approval.new(user: u)}
-      proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
+      individuals = assignees.map { |user| build(:approval_step, assignee: user) }
+      proposal.root_step = build(:parallel_step, child_approvals: individuals)
 
       expect(proposal.steps.actionable.count).to be 4
       expect(proposal.individual_steps.actionable.count).to be 3
     end
 
-    it 'fixes modified linear proposal approvals' do
-      approver1 = create(:user)
-      approver2 = create(:user)
-      approver3 = create(:user)
+    it "fixes modified linear proposal approvals" do
+      assignees = create_list(:user, 3)
       proposal = create(:proposal)
-      approver1, approver2, approver3 = 3.times.map{ create(:user) }
-      individuals = [approver1, approver2].map{ |u| Steps::Approval.new(user: u) }
-      proposal.root_step = Steps::Serial.new(child_approvals: individuals)
+      individuals = [assignees[0], assignees[1]].map { |user| build(:approval_step, assignee: user) }
+      proposal.root_step = build(:serial_step, child_approvals: individuals)
 
       expect(proposal.steps.actionable.count).to be 2
       expect(proposal.individual_steps.actionable.count).to be 1
 
       individuals.first.approve!
-      individuals[1] = Steps::Approval.new(user: approver3)
-      proposal.root_step = Steps::Serial.new(child_approvals: individuals)
+      individuals[1] = build(:approval_step, assignee: assignees[2])
+      proposal.root_step = build(:serial_step, child_approvals: individuals)
 
       expect(proposal.steps.approved.count).to be 1
       expect(proposal.steps.actionable.count).to be 2
       expect(proposal.individual_steps.actionable.count).to be 1
-      expect(proposal.individual_steps.actionable.first.user).to eq approver3
+      expect(proposal.individual_steps.actionable.first.assignee).to eq assignees[2]
     end
 
-    it 'does not modify a full approved parallel proposal' do
-      approver1 = create(:user)
-      approver2 = create(:user)
+    it "does not modify a full approved parallel proposal" do
+      assignees = create_list(:user, 2)
       proposal = create(:proposal)
-      individuals = [approver1, approver2].map{ |u| Steps::Approval.new(user: u)}
-      proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
+      individuals = assignees.map { |user| build(:approval_step, assignee: user) }
+      proposal.root_step = build(:parallel_step, child_approvals: individuals)
 
       proposal.individual_steps.first.approve!
       proposal.individual_steps.second.approve!
@@ -112,12 +102,11 @@ describe StepManager do
       expect(proposal.steps.actionable).to be_empty
     end
 
-    it 'does not modify a full approved linear proposal' do
-      approver1 = create(:user)
-      approver2 = create(:user)
+    it "does not modify a full approved linear proposal" do
+      assignees = create_list(:user, 2)
       proposal = create(:proposal)
-      individuals = [approver1, approver2].map{ |u| Steps::Approval.new(user: u)}
-      proposal.root_step = Steps::Serial.new(child_approvals: individuals)
+      individuals = assignees.map { |user| build(:approval_step, assignee: user) }
+      proposal.root_step = build(:serial_step, child_approvals: individuals)
 
       proposal.individual_steps.first.approve!
       proposal.individual_steps.second.approve!
@@ -125,10 +114,10 @@ describe StepManager do
       expect(proposal.steps.actionable).to be_empty
     end
 
-    it 'deletes approvals' do
+    it "deletes approvals" do
       proposal = create(:proposal, :with_parallel_approvers)
       approval1, approval2 = proposal.individual_steps
-      proposal.root_step = Steps::Serial.new(child_approvals: [approval2])
+      proposal.root_step = build(:serial_step, child_approvals: [approval2])
 
       expect(Step.exists?(approval1.id)).to be false
     end

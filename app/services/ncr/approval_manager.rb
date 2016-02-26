@@ -27,7 +27,7 @@ module Ncr
     delegate :proposal, to: :work_order
 
     def set_up_as_approvers
-      original_approvers = proposal.reload.individual_steps.non_pending.map(&:user)
+      original_approvers = proposal.reload.individual_steps.non_pending.map(&:assignee)
       force_approvers(approvers)
       notify_removed_approvers(original_approvers)
     end
@@ -48,13 +48,13 @@ module Ncr
     # emergencies, or notify removed approvers
     def force_approvers(users)
       individuals = users.map do |user|
-        proposal.existing_step_for(user) || Steps::Approval.new(user: user)
+        proposal.existing_step_for(user) || Steps::Approval.new(assignee: user)
       end
       proposal.root_step = Steps::Serial.new(child_approvals: individuals)
     end
 
     def notify_removed_approvers(original_approvers)
-      current_approvers = proposal.individual_steps.non_pending.map(&:user)
+      current_approvers = proposal.individual_steps.non_pending.map(&:assignee)
       removed_approvers_to_notify = original_approvers - current_approvers
       Dispatcher.on_approver_removal(proposal, removed_approvers_to_notify)
     end

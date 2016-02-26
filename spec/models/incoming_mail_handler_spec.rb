@@ -47,10 +47,10 @@ describe "Handles incoming email" do
     mail = Mailer.actions_for_approver(my_approval)
     mandrill_event = mandrill_payload_from_message(mail)
     mandrill_event[0]['msg']['from_email'] = 'not-a-valid-user@example.com'
-    mandrill_event[0]['msg']['headers']['Sender'] = my_approval.user.email_address
+    mandrill_event[0]['msg']['headers']['Sender'] = my_approval.assignee_email_address
     handler = IncomingMail::Handler.new
-    expect(my_approval.proposal.existing_observation_for(my_approval.user)).not_to be_present
-    expect(my_approval.proposal.existing_step_for(my_approval.user)).to be_present
+    expect(my_approval.proposal.existing_observation_for(my_approval.assignee)).not_to be_present
+    expect(my_approval.proposal.existing_step_for(my_approval.assignee)).to be_present
     resp = handler.handle(mandrill_event)
     expect(resp.action).to eq(IncomingMail::Response::COMMENT)
   end
@@ -59,15 +59,15 @@ describe "Handles incoming email" do
     my_approval = approval
     mail = Mailer.actions_for_approver(my_approval)
     mandrill_event = mandrill_payload_from_message(mail)
-    mandrill_event[0]['msg']['from_email'] = my_approval.user.email_address
+    mandrill_event[0]['msg']['from_email'] = my_approval.assignee_email_address
     handler = IncomingMail::Handler.new
-    expect(my_approval.proposal.existing_observation_for(my_approval.user)).not_to be_present
-    expect(my_approval.proposal.existing_step_for(my_approval.user)).to be_present
+    expect(my_approval.proposal.existing_observation_for(my_approval.assignee)).not_to be_present
+    expect(my_approval.proposal.existing_step_for(my_approval.assignee)).to be_present
     resp = handler.handle(mandrill_event)
     expect(resp.action).to eq(IncomingMail::Response::COMMENT)
 
-    expect(my_approval.proposal.existing_observation_for(my_approval.user)).to be_present
-    expect(my_approval.proposal.existing_step_for(my_approval.user)).to be_present
+    expect(my_approval.proposal.existing_observation_for(my_approval.assignee)).to be_present
+    expect(my_approval.proposal.existing_step_for(my_approval.assignee)).to be_present
     expect(deliveries.length).to eq(1) # 1 each to requester and approver
   end
 

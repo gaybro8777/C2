@@ -15,21 +15,21 @@ describe Proposal do
     it "disallows requester from also being approver" do
       user = create(:user)
       expect {
-        create(:proposal, :with_approver, requester: user, approver_user: user) 
+        create(:proposal, :with_approver, requester: user, approver_user: user)
       }.to raise_error(ActiveRecord::RecordNotSaved)
     end
 
     it "disallows assigning requester as approver" do
       proposal = create(:proposal)
       expect {
-        proposal.add_initial_steps([Steps::Approval.new(user: proposal.requester)])
+        proposal.add_initial_steps([Steps::Approval.new(assignee: proposal.requester)])
       }.to raise_error(ActiveRecord::RecordNotSaved)
     end
 
     it "disallows assigning approver as requester" do
       proposal = create(:proposal, :with_approver)
       expect {
-        proposal.add_requester(proposal.individual_steps.first.user.email_address)
+        proposal.add_requester(proposal.individual_steps.first.assignee_email_address)
       }.to raise_error(/cannot also be Requester/)
     end
   end
@@ -199,8 +199,8 @@ describe Proposal do
   describe '#root_step=' do
     it 'sets initial approvers' do
       proposal = create(:proposal)
-      approvers = 3.times.map{ create(:user) }
-      individuals = approvers.map{ |u| Steps::Approval.new(user: u) }
+      approvers = create_list(:user, 3)
+      individuals = approvers.map{ |u| Steps::Approval.new(assignee: u) }
 
       proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
 
@@ -208,12 +208,10 @@ describe Proposal do
       expect(proposal.approvers).to eq approvers
     end
 
-    it 'initates parallel' do
-      approver1 = create(:user)
-      approver2 = create(:user)
-      approver3 = create(:user)
+    it "initates parallel" do
+      approvers = create_list(:user, 3)
       proposal = create(:proposal)
-      individuals = [approver1, approver2, approver3].map{ |u| Steps::Approval.new(user: u)}
+      individuals = approvers.map { |user| Steps::Approval.new(assignee: user)}
 
       proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
 
@@ -223,12 +221,10 @@ describe Proposal do
       expect(proposal.steps.actionable.count).to be 4
     end
 
-    it 'initates linear' do
-      approver1 = create(:user)
-      approver2 = create(:user)
-      approver3 = create(:user)
+    it "initates linear" do
+      approvers = create_list(:user, 3)
       proposal = create(:proposal)
-      individuals = [approver1, approver2, approver3].map{ |u| Steps::Approval.new(user: u)}
+      individuals = approvers.map { |user| Steps::Approval.new(assignee: user) }
 
       proposal.root_step = Steps::Serial.new(child_approvals: individuals)
 
@@ -239,6 +235,7 @@ describe Proposal do
     end
 
     it "fixes modified parallel proposal approvals" do
+      approvers = create_list(:user, 3)
       approver1 = create(:user)
       approver2 = create(:user)
       approver3 = create(:user)
@@ -336,7 +333,7 @@ describe Proposal do
       proposal.individual_steps.first.approve!
       proposal.individual_steps.second.approve!
       expect(proposal.reload.approved?).to be true
-      individuals = proposal.root_step.child_approvals + [Steps::Approval.new(user: create(:user))]
+      individuals = proposal.root_step.child_approvals + [Steps::Approval.new(assignee: create(:user))]
       proposal.root_step = Steps::Parallel.new(child_approvals: individuals)
 
       proposal.reset_status()

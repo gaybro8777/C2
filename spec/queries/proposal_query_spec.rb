@@ -17,7 +17,7 @@ describe ProposalQuery do
 
       users = ProposalQuery.new(proposal).approvers
 
-      expect(users).to match_array([approval_step.user])
+      expect(users).to match_array([approval_step.assignee])
     end
   end
 
@@ -28,7 +28,7 @@ describe ProposalQuery do
 
       users = ProposalQuery.new(proposal).purchasers
 
-      expect(users).to match_array([purchase_step.user])
+      expect(users).to match_array([purchase_step.assignee])
     end
   end
 

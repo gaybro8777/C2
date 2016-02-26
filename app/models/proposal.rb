@@ -134,11 +134,11 @@ class Proposal < ActiveRecord::Base
 
   def existing_or_delegated_step_for(user)
     where_clause = <<-SQL
-      user_id = :user_id
-      OR user_id IN (SELECT assigner_id FROM user_delegates WHERE assignee_id = :user_id)
-      OR user_id IN (SELECT assignee_id FROM user_delegates WHERE assigner_id = :user_id)
+      assignee_id = :assignee_id
+      OR assignee_id IN (SELECT assigner_id FROM user_delegates WHERE assignee_id = :assignee_id)
+      OR assignee_id IN (SELECT assignee_id FROM user_delegates WHERE assigner_id = :assignee_id)
     SQL
-    steps.where(where_clause, user_id: user.id).first
+    steps.where(where_clause, assignee_id: user.id).first
   end
 
   def delegates
@@ -158,7 +158,7 @@ class Proposal < ActiveRecord::Base
   end
 
   def existing_step_for(user)
-    steps.where(user: user).first
+    steps.where(assignee: user).first
   end
 
   def subscribers
@@ -254,7 +254,7 @@ class Proposal < ActiveRecord::Base
 
   # Returns True if the user is an "active" approver and has acted on the proposal
   def is_active_step_user?(user)
-    individual_steps.non_pending.exists?(user: user)
+    individual_steps.non_pending.exists?(assignee: user)
   end
 
   def self.client_model_names

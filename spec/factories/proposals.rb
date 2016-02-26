@@ -3,7 +3,7 @@ FactoryGirl.define do
 
   factory :proposal do
     public_id
-    status 'pending'
+    status "pending"
     association :requester, factory: :user
 
     transient do
@@ -16,21 +16,21 @@ FactoryGirl.define do
     trait :with_approver do
       after :create do |proposal, evaluator|
         user = evaluator.approver_user || create(:user, client_slug: evaluator.client_slug)
-        proposal.add_initial_steps([Steps::Approval.new(user: user)])
+        proposal.add_initial_steps([build(:approval_step, assignee: user)])
       end
     end
 
     trait :with_serial_approvers do
       after :create do |proposal, evaluator|
-        ind = 2.times.map{ Steps::Approval.new(user: create(:user, client_slug: evaluator.client_slug)) }
+        ind = 2.times.map { Steps::Approval.new(assignee: create(:user, client_slug: evaluator.client_slug)) }
         proposal.add_initial_steps(ind)
       end
     end
 
     trait :with_parallel_approvers do
       after :create do |proposal, evaluator|
-        ind = 2.times.map{ Steps::Approval.new(user: create(:user, client_slug: evaluator.client_slug)) }
-        proposal.root_step = Steps::Parallel.new(child_approvals: ind)
+        ind = 2.times.map { Steps::Approval.new(assignee: create(:user, client_slug: evaluator.client_slug)) }
+        proposal.root_step = build(:parallel_step, child_approvals: ind)
       end
     end
 
@@ -39,8 +39,8 @@ FactoryGirl.define do
         first_approver = create(:user, client_slug: evaluator.client_slug)
         second_approver = create(:user, client_slug: evaluator.client_slug)
         steps = [
-          create(:approval, user: first_approver),
-          create(:purchase_step, user: second_approver)
+          create(:approval, assignee: first_approver),
+          create(:purchase_step, assignee: second_approver)
         ]
         proposal.add_initial_steps(steps)
       end
@@ -69,7 +69,7 @@ FactoryGirl.define do
 
       if evaluator.delegate
         user = evaluator.approver_user || create(:user, client_slug: evaluator.client_slug)
-        proposal.add_initial_steps([Steps::Approval.new(user: user)])
+        proposal.add_initial_steps([build(:approval_step, assignee: user)])
         user.add_delegate(evaluator.delegate)
       end
 

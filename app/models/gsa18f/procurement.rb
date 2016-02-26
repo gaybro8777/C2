@@ -54,8 +54,8 @@ module Gsa18f
 
     def add_steps
       steps = [
-        Steps::Approval.new(user: User.for_email(Gsa18f::Procurement.approver_email)),
-        Steps::Purchase.new(user: User.for_email(Gsa18f::Procurement.purchaser_email)),
+        Steps::Approval.new(assignee: User.for_email(Gsa18f::Procurement.approver_email)),
+        Steps::Purchase.new(assignee: User.for_email(Gsa18f::Procurement.purchaser_email)),
       ]
       proposal.add_initial_steps(steps)
     end

@@ -279,7 +279,7 @@ describe Ncr::WorkOrder do
       work_order = create(:ncr_work_order)
       work_order.setup_approvals_and_observers
       budget_mailbox_step = work_order.steps.last
-      user = budget_mailbox_step.user
+      user = budget_mailbox_step.assignee
 
       expect(work_order.budget_approvers).to include(user)
     end

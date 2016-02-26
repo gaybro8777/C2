@@ -52,7 +52,7 @@ describe ProposalListingQuery do
           first_step = proposal.individual_steps.first
           first_step.approve!
 
-          proposals = ProposalListingQuery.new(first_step.user, params).pending_review
+          proposals = ProposalListingQuery.new(first_step.assignee, params).pending_review
 
           expect(proposals.rows).to_not include(proposal)
         end

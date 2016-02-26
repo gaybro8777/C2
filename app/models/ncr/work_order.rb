@@ -18,7 +18,6 @@ module Ncr
     include ClientDataMixin
     include PurchaseCardMixin
 
-    # This is a hack to be able to attribute changes to the correct user. This attribute needs to be set explicitly, then the update comment will use them as the "commenter". Defaults to the requester.
     attr_accessor :modifier
 
     belongs_to :ncr_organization, class_name: Ncr::Organization

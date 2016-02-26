@@ -4,7 +4,7 @@ class Mailer < ApplicationMailer
 
   def actions_for_approver(step, alert_partial = nil)
     @show_step_actions = true
-    to_email = step.user_email_address
+    to_email = step.assignee_email_address
     proposal = step.proposal
 
     unless step.api_token
@@ -55,7 +55,7 @@ class Mailer < ApplicationMailer
     @step = approval
 
     send_proposal_email(
-      from_email: user_email_with_name(approval.user),
+      from_email: user_email_with_name(approval.assignee),
       to_email: proposal.requester.email_address,
       proposal: proposal
     )

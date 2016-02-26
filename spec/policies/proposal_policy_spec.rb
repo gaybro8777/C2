@@ -45,7 +45,7 @@ describe ProposalPolicy do
         _first_approval = create(:approval_step, proposal: proposal, status: "approved")
         purchase_step = create(:purchase_step, proposal: proposal, status: "actionable")
 
-        expect(ProposalPolicy).to permit(purchase_step.user, proposal)
+        expect(ProposalPolicy).to permit(purchase_step.assignee, proposal)
       end
 
       it "does not allow when it's not the user's turn" do

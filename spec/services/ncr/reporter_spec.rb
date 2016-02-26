@@ -63,25 +63,25 @@ describe Ncr::Reporter do
       proposal = work_order.proposal
 
       individual_approval_step = proposal.currently_awaiting_steps.first
-      expect(work_order.current_approver).to eq(individual_approval_step.user)
+      expect(work_order.current_approver).to eq(individual_approval_step.assignee)
       csv = Ncr::Reporter.as_csv([proposal])
-      expect(csv).to include(",#{individual_approval_step.user.email_address}")
+      expect(csv).to include(",#{individual_approval_step.assignee_email_address}")
 
       individual_approval_step.approve!
       official_approval_step = proposal.currently_awaiting_steps.first
       proposal.reload
       work_order.reload
-      expect(work_order.current_approver).to eq(official_approval_step.user)
+      expect(work_order.current_approver).to eq(official_approval_step.assignee)
       csv = Ncr::Reporter.as_csv([proposal])
-      expect(csv).to include(",#{official_approval_step.user.email_address}")
+      expect(csv).to include(",#{official_approval_step.assignee_email_address}")
 
       official_approval_step.approve!
       budget_approval_step = proposal.currently_awaiting_steps.first
       proposal.reload
       work_order.reload
-      expect(work_order.current_approver).to eq(budget_approval_step.user)
+      expect(work_order.current_approver).to eq(budget_approval_step.assignee)
       csv = Ncr::Reporter.as_csv([proposal])
-      expect(csv).to include(",#{budget_approval_step.user.email_address}")
+      expect(csv).to include(",#{budget_approval_step.assignee_email_address}")
     end
   end
 

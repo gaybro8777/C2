@@ -37,7 +37,7 @@ describe NcrDispatcher do
       deliveries.clear
       ncr_dispatcher.on_proposal_update(proposal)
       email = deliveries[0]
-      expect(email.to).to eq([step_1.user.email_address])
+      expect(email.to).to eq([step_1.assignee_email_address])
       expect(email.html_part.body.to_s).to include("already approved")
       expect(email.html_part.body.to_s).to include("updated")
     end
@@ -45,7 +45,7 @@ describe NcrDispatcher do
     it 'current approver if they have not be notified before' do
       ncr_dispatcher.on_proposal_update(proposal)
       email = deliveries[0]
-      expect(email.to).to eq([step_1.user.email_address])
+      expect(email.to).to eq([step_1.assignee_email_address])
       expect(email.html_part.body.to_s).not_to include("already approved")
       expect(email.html_part.body.to_s).not_to include("updated")
     end
@@ -54,7 +54,7 @@ describe NcrDispatcher do
       create(:api_token, step: step_1)
       ncr_dispatcher.on_proposal_update(proposal)
       email = deliveries[0]
-      expect(email.to).to eq([step_1.user.email_address])
+      expect(email.to).to eq([step_1.assignee_email_address])
       expect(email.html_part.body.to_s).not_to include("already approved")
       expect(email.html_part.body.to_s).to include("updated")
     end
@@ -71,14 +71,14 @@ describe NcrDispatcher do
     it 'does not notify approver if they are the one making the update' do
       deliveries.clear
       email = step_1.user.email_address
-      ncr_dispatcher.on_proposal_update(proposal, step_1.user)
+      ncr_dispatcher.on_proposal_update(proposal, step_1.assignee)
       expect(email_recipients).to_not include(email)
     end
 
     it "does notify requester if they are not the one making the update" do
       deliveries.clear
       email = proposal.requester.email_address
-      ncr_dispatcher.on_proposal_update(proposal, step_1.user)
+      ncr_dispatcher.on_proposal_update(proposal, step_1.assignee)
       expect(step_1.user.email_address).to_not eq(proposal.requester.email_address)
       expect(email_recipients).to include(email)
     end
