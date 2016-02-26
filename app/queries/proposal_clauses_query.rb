@@ -32,16 +32,24 @@ class ProposalClausesQuery
     approvals_with_delegates.where(
       with_matching_proposal.and(
         non_pending.and(
-          where_step_user(user).or(where_delegate(user))
+          assignee_is_user.and(
+            where_step_user(user).or(where_delegate(user))
+          )
         )
       )
     ).ast
   end
 
   def approvals_with_delegates
-    steps.project(Arel.star).
+    steps.
+      where(steps[:assignee_type].eq("User")).
+      project(Arel.star).
       join(delegates, Arel::Nodes::OuterJoin).
-      on(delegates[:assigner_id].eq(steps[:user_id]))
+      on(
+        delegates[:assigner_id].eq(
+         steps[:assignee_id]
+        )
+      )
   end
 
   def with_matching_proposal
@@ -52,8 +60,12 @@ class ProposalClausesQuery
     steps[:status].not_eq("pending")
   end
 
+  def assignee_is_user
+    steps[:assignee_type].eq("User")
+  end
+
   def where_step_user(user)
-    steps[:user_id].eq(user.id)
+    steps[:assignee_id].eq(user.id)
   end
 
   def where_delegate(user)

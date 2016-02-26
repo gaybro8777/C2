@@ -125,8 +125,8 @@ feature "Proposals index" do
   def create_proposal_with_approvers(first_approver, second_approver)
     proposal = create(:proposal)
     steps = [
-      create(:approval, user: first_approver),
-      create(:purchase_step, user: second_approver)
+      create(:approval_step, assignee: first_approver),
+      create(:purchase_step, assignee: second_approver)
     ]
     proposal.add_initial_steps(steps)
     proposal

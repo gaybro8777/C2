@@ -8,24 +8,23 @@ describe ProposalListingQuery do
         it "ignores app admin role and only returns the user's Proposals" do
           create(:proposal, status: status)
           proposal = create(:proposal, requester: user, status: status)
-          user.add_role('admin')
+          user.add_role("admin")
+
           listing = ProposalListingQuery.new(user, params)
+
           expect(listing.send(status).rows).to eq([proposal])
         end
 
         context "with an arbitrary client" do
-          before do
-            user.update_attribute(:client_slug, "ncr")
-            user.add_role('client_admin')
-          end
-
           it "ignores client_admin role and only displays the user's Proposals" do
+            user.update_attribute(:client_slug, "ncr")
+            user.add_role("client_admin")
             proposal = create(:proposal, requester: user, status: status)
-
             other_proposal = create(:proposal, status: status)
             create(:ncr_work_order, proposal: other_proposal)
 
             listing = ProposalListingQuery.new(user, params)
+
             expect(listing.send(status).rows).to eq([proposal])
           end
         end
@@ -38,7 +37,7 @@ describe ProposalListingQuery do
       context "and the current waiting step lists you as user" do
         it "returns the proposal" do
           proposal = create(:proposal, :with_approver)
-          user = proposal.individual_steps.first.user
+          user = proposal.individual_steps.first.assignee
 
           proposals = ProposalListingQuery.new(user, params).pending_review
 
@@ -61,7 +60,7 @@ describe ProposalListingQuery do
       context "and the step listing you as user is not the current waiting step" do
         it "does not return the proposal" do
           proposal = create(:proposal, :with_serial_approvers)
-          user = proposal.individual_steps.second.user
+          user = proposal.individual_steps.second.assignee
 
           proposals = ProposalListingQuery.new(user, params).pending_review
 
@@ -75,7 +74,7 @@ describe ProposalListingQuery do
         it "returns the proposal" do
           proposal = create(:proposal, :with_approval_and_purchase)
           proposal.individual_steps.first.approve!
-          user = proposal.individual_steps.second.user
+          user = proposal.individual_steps.second.assignee
 
           proposals = ProposalListingQuery.new(user, params).pending_review
 

@@ -37,7 +37,7 @@ describe ProposalQuery do
       user = create(:user)
       other_user = create(:user)
       proposal = create(:proposal, delegate: user)
-      create(:approval_step, user: other_user, proposal: proposal)
+      create(:approval_step, assignee: other_user, proposal: proposal)
 
       users = ProposalQuery.new(proposal).delegates
 
