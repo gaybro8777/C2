@@ -33,13 +33,13 @@ class NcrDispatcher < LinearDispatcher
       if modifier and approval.user.id == modifier.id
         next # no email for modifier
       end
-      Mailer.notification_for_subscriber(approval.user_email_address, proposal, "already_approved", approval).deliver_later
+      Mailer.notification_for_subscriber(approval.assignee_email_address, proposal, "already_approved", approval).deliver_later
     end
   end
 
   def notify_pending_approvers(proposal, modifier)
     proposal.currently_awaiting_steps.each do |approval|
-      if modifier and approval.user.id == modifier.id
+      if modifier and approval.assignee.id == modifier.id
         next # no email for modifier
       end
       if approval.api_token # Approver's been notified through some other means

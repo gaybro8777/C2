@@ -70,7 +70,7 @@ describe NcrDispatcher do
 
     it 'does not notify approver if they are the one making the update' do
       deliveries.clear
-      email = step_1.user.email_address
+      email = step_1.assignee_email_address
       ncr_dispatcher.on_proposal_update(proposal, step_1.assignee)
       expect(email_recipients).to_not include(email)
     end
@@ -79,7 +79,7 @@ describe NcrDispatcher do
       deliveries.clear
       email = proposal.requester.email_address
       ncr_dispatcher.on_proposal_update(proposal, step_1.assignee)
-      expect(step_1.user.email_address).to_not eq(proposal.requester.email_address)
+      expect(step_1.assignee_email_address).to_not eq(proposal.requester.email_address)
       expect(email_recipients).to include(email)
     end
   end

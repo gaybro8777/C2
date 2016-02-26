@@ -30,11 +30,11 @@ class Dispatcher
   end
 
   def deliver_attachment_emails(proposal)
-    proposal.subscribers_except_delegates.each do |user|
-      step = proposal.steps.find_by(user_id: user.id)
+    proposal.subscribers_except_delegates.each do |assignee|
+      step = proposal.steps.find_by(assignee: assignee)
 
       if user_is_not_step_user?(step) || step_user_knows_about_proposal?(step)
-        Mailer.new_attachment_email(user.email_address, proposal).deliver_later
+        Mailer.new_attachment_email(assignee.email_address, proposal).deliver_later
       end
     end
   end
